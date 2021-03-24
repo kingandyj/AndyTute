@@ -1,0 +1,28 @@
+version: "3"
+
+services:
+  db:
+    image: mysql:5.7
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: always
+    env_file: .env
+    healthcheck:
+      test: "mysql --user=root --password=root-django --execute \"SHOW DATABASES;\""
+      interval: 10s
+      timeout: 30s
+      retries: 10
+  appengine:
+    build: .
+    env_file: .env
+    volumes:
+      - .:/app
+    ports:
+      - '$APP_PORT:8000'
+    depends_on:
+      db:
+        condition: service_healthy
+    links:
+      - db
+volumes:
+  db_data: {}
